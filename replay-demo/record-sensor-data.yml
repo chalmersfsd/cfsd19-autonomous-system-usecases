@@ -2,17 +2,22 @@ version: '2'
 
 services:
 #This file is for the x86 on the race car. It cannot run on your laptop due to lack of sensor connections.
-    recorder48:
-       image: chrberger/cluon-amd64:latest
-       network_mode: "host"
-       volumes:
-       - ./recordings48cluon:/opt/recordings
-       working_dir: "/opt/recordings"
-       command: sh -c "cluon-OD4toStdout --cid=48 > `date +CID-48-recording-%Y-%m-%d_%H%M%S.rec`"
+    #web-based recorder
+    opendlv-vehicle-view-amd64:
+        container_name: opendlv-vehicle-view
+        image: chalmersrevere/opendlv-vehicle-view-multi:v0.0.39
+        restart: on-failure
+        volumes:
+        - ./recordings:/opt/vehicle-view/recordings
+        - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+        # listen on CID 48, replay on CID 253
+        - OD4SESSION_CID=48
+        ports:
+        - "8081:8081"
 
     proxy-camera:
-       #local image, change ENTRYPOINT to CMD in Dockerfile to enable change nice value from command line
-       image: proxy-camera:0af4299
+       image: chalmersrevere/opendlv-device-camera-opencv-multi:v0.0.10
        network_mode: host
        group_add:
            - video
@@ -42,7 +47,7 @@ services:
         command: "opendlv-device-lidar-vlp16 --vlp16_ip=0.0.0.0 --vlp16_port=2368 --cid=${CID}"
 
     #proxy-ellipse2n
-    #image need to be built locally
+    #image need to be built locally, license issue
     opendlv-proxy-ellipse2n:
         image: proxy-imu:local
         network_mode: "host"
