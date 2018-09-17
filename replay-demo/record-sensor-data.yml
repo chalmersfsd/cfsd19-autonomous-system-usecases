@@ -1,0 +1,51 @@
+version: '2'
+
+services:
+#This file is for the x86 on the race car. It cannot run on your laptop due to lack of sensor connections.
+    recorder48:
+       image: chrberger/cluon-amd64:latest
+       network_mode: "host"
+       volumes:
+       - ./recordings48cluon:/opt/recordings
+       working_dir: "/opt/recordings"
+       command: sh -c "cluon-OD4toStdout --cid=48 > `date +CID-48-recording-%Y-%m-%d_%H%M%S.rec`"
+
+    proxy-camera:
+       #local image, change ENTRYPOINT to CMD in Dockerfile to enable change nice value from command line
+       image: proxy-camera:0af4299
+       network_mode: host
+       group_add:
+           - video
+       ipc: host
+       privileged: true
+       user: root
+       devices:
+           - "/dev/video0:/dev/video0"
+       environment:
+           - DISPLAY=$DISPLAY
+           - CLUON_SHAREDMEMORY_POSIX=1
+       volumes:
+           - /tmp/.X11-unix:/tmp/.X11-unix
+           - "/dev/shm:/dev/shm"
+       ulimits:
+         memlock:
+           soft: 5600000 #1516032
+           hard: 5600000
+       command: "nice -n -10 opendlv-device-camera-opencv --name=cam0 --bgr2rgb --cid=${CID} --camera=/dev/video0 --width=2560 --height=720 --bpp=24 --freq=15"
+
+    proxy-velodyne16:
+        image: chalmersrevere/opendlv-device-lidar-vlp16-multi:v0.0.7
+        network_mode: "host"
+        volumes:
+            - .:/opt/opendlv.data
+        working_dir: "/opt/opendlv.data"
+        command: "opendlv-device-lidar-vlp16 --vlp16_ip=0.0.0.0 --vlp16_port=2368 --cid=${CID}"
+
+    #proxy-ellipse2n
+    #image need to be built locally
+    opendlv-proxy-ellipse2n:
+        image: proxy-imu:local
+        network_mode: "host"
+        devices:
+            - "/dev/ttyUSB0:/dev/ttyUSB0"
+        command: "opendlv-proxy-ellipse2n --cid=${CID} --id=112 --idRawData=108"
