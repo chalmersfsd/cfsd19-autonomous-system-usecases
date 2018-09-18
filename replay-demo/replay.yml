@@ -17,4 +17,4 @@ services:
 
     message-receiver:
         # this image need to build locally, the source file is in the receiver-replay folder
-        image: receiver:local
+        image: receiver:v0.0.1

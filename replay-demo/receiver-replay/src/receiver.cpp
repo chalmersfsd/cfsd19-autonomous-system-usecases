@@ -29,26 +29,25 @@ int main(int argc, char **argv) {
     // belonging to the same group can receive message sent to it.
     cluon::OD4Session od4{253};
 
-    while (od4.isRunning()) {
-        // Now, we define a callback lambda that is invoked when a new message of
-        // type opendlv::logic::sensation::Geolocation is received. All messages in an OD4Session are wrapped
-        // into a cluon::data::Envelope that contains further information like
-        // sent and received time stamp (cf. here: https://github.com/chrberger/libcluon/blob/master/libcluon/resources/cluonDataStructures.odvd#L23-L30)
-        // Our lambda will hence be called being handed over the cluon::data::Envelope
-        // that contains MyMessage.
-        auto onMyMessage1 = [](cluon::data::Envelope &&env){
-            // Now, we unpack the cluon::data::Envelope to get our message.
-            opendlv::logic::sensation::Geolocation msg = cluon::extractMessage<opendlv::logic::sensation::Geolocation>(std::move(env));
-            std::cout << "latitude = " << msg.latitude() << ", longitude = " << msg.longitude() << std::endl;
-        };
+    auto onMyMessage1 = [](cluon::data::Envelope &&env){
+        // Now, we unpack the cluon::data::Envelope to get our message.
+        opendlv::logic::sensation::Geolocation msg = cluon::extractMessage<opendlv::logic::sensation::Geolocation>(std::move(env));
+        std::cout << "latitude = " << msg.latitude() << ", longitude = " << msg.longitude() << std::endl;
+    };
 
-        // Finally, we register our lambda for the message identifier for MyMessage.
-        od4.dataTrigger(opendlv::logic::sensation::Geolocation::ID(), onMyMessage1);
+    // Finally, we register our lambda for the message identifier for MyMessage.
+    od4.dataTrigger(opendlv::logic::sensation::Geolocation::ID(), onMyMessage1);
 
-        // Let's wait for 10s to receive messages.
-        //using namespace std::chrono_literals;
-        //std::this_thread::sleep_for(10s);
-    }
 
-    return 0;
+    float const FREQ = 20;
+
+    auto atFrequency{[]() -> bool
+    {
+      //empty
+      return true;
+    }};
+        
+
+    od4.timeTrigger(FREQ, atFrequency);
+
 }
