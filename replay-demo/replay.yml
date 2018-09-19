@@ -9,9 +9,9 @@ services:
         volumes:
         - ./recordings:/opt/vehicle-view/recordings
         - /var/run/docker.sock:/var/run/docker.sock
-        environment:
-        # listen on CID 48, replay on CID 253
-        - OD4SESSION_CID=48
+        #environment:
+        #  join live session CID 48, replay on default CID 253
+        #- OD4SESSION_CID=48
         ports:
         - "8081:8081"
 
