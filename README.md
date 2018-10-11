@@ -15,4 +15,4 @@ Each Use Case directory simply contains the following:
 - *.env*: A list of variable values that are substituted into docker-compose.yml
 
 ### Parameter tweaking
-The microservices that are started in 
+The microservices that are started for a Use Case have several parameters whose values can be specified in docker-compose.yml.
